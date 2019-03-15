@@ -4,9 +4,13 @@ namespace ue01_aktien
 {
     class Program
     {
+        private static readonly MenuManager MenuManager = new MenuManager();
+        
+        
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            MenuManager.InitMenu();
+
         }
     }
 }

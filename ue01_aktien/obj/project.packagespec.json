@@ -1,0 +1,57 @@
+﻿{
+  "version": "1.0.0",
+  "restore": {
+    "projectUniqueName": "C:\\Users\\benja\\RiderProjects\\ue01_aktien\\ue01_aktien\\ue01_aktien.csproj",
+    "projectName": "ue01_aktien",
+    "projectPath": "C:\\Users\\benja\\RiderProjects\\ue01_aktien\\ue01_aktien\\ue01_aktien.csproj",
+    "outputPath": "C:\\Users\\benja\\RiderProjects\\ue01_aktien\\ue01_aktien\\obj\\",
+    "projectStyle": "PackageReference",
+    "fallbackFolders": [
+      "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+    ],
+    "originalTargetFrameworks": [
+      "netcoreapp3.0"
+    ],
+    "frameworks": {
+      "netcoreapp3.0": {
+        "projectReferences": {}
+      }
+    },
+    "warningProperties": {
+      "warnAsError": [
+        "NU1605"
+      ]
+    }
+  },
+  "frameworks": {
+    "netcoreapp3.0": {
+      "dependencies": {
+        "Microsoft.NETCore.Platforms": {
+          "suppressParent": "All",
+          "target": "Package",
+          "version": "[3.0.0-preview3.19128.7, )",
+          "autoReferenced": true
+        },
+        "Microsoft.WindowsDesktop.App": {
+          "include": "None",
+          "suppressParent": "All",
+          "target": "Package",
+          "version": "[3.0.0-preview3-27504-2, )",
+          "autoReferenced": true
+        },
+        "runtime.win-x64.Microsoft.NETCore.DotNetAppHost": {
+          "include": "None",
+          "suppressParent": "All",
+          "target": "Package",
+          "version": "[3.0.0-preview3-27503-5, )",
+          "autoReferenced": true
+        }
+      },
+      "imports": [
+        "net461"
+      ],
+      "assetTargetFallback": true,
+      "warn": true
+    }
+  }
+}
