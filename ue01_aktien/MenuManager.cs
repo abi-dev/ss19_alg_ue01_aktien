@@ -13,23 +13,23 @@ namespace ue01_aktien
         private const string Menu = @"
         -----------------------------------------------------------------------------
         Menü:
-            1. ADD: Eine Aktie mit Namen, WKN und Kürzel wird hinzugefügt.
-            2. DEL: Aktie wird gelöscht.
-            3. IMPORT: Kurswerte für eine Aktie werden aus einer csv Datei importiert
-            4. SEARCH: Eine Aktie wird in der Hashtabelle gesucht (Eingabe von Namen
-            oder Kürzel) und der aktuellste Kurseintrag
-            (Date,Open,High,Low,Close,Volume,Adj Close) wird ausgegeben.
-            5. PLOT: Die Schlusskurse der letzten 30 Tage einer Aktie werden als ASCII
-            Grafik ausgegeben, Format ist frei wählbar.
-            6. SAVE <filename>: Programm speichert die Hashtabelle in eine Datei ab
-            7. LOAD <filename>: Programm lädt die Hashtabelle aus einer Datei
-            8. QUIT: Programm wird beendet";
+            1. ADD: Eine Aktie mit Namen, WKN und Kürzel hinzufügen.
+            2. DEL: Aktie löschen.
+            3. IMPORT: Kurswerte für eine Aktie aus einer csv Datei importieren
+            4. SEARCH: Eine Aktie in der Hashtabelle suchen (Eingabe von Namen
+            oder Kürzel) und den aktuellsten Kurseintrag mit
+            (Date,Open,High,Low,Close,Volume,Adj Close) ausgeben.
+            5. PLOT: Die Schlusskurse der letzten 30 Tage einer Aktie als ASCII
+            Grafik ausgeben.
+            6. SAVE <filename>: Hashtabelle in eine Datei speichern
+            7. LOAD <filename>: Hashtabelle aus einer Datei laden
+            8. QUIT: Programm beenden";
 
         private struct Command
         {
-            public string cmd;
-            public string[] args;
-            public bool isChecked;
+            public string Cmd;
+            public string[] Args;
+            public bool IsChecked;
         }
         
         private Command _cmd;
@@ -41,13 +41,13 @@ namespace ue01_aktien
 
         public void InitMenu()
         {
-            _cmd.isChecked = false;
+            _cmd.IsChecked = false;
             
             Console.WriteLine(Welcome);
             ShowMenu();
         }
 
-        public void ShowMenu()
+        private void ShowMenu()
         {
             string cmdText = "";
             
@@ -67,14 +67,14 @@ namespace ue01_aktien
             
                 if (!match.Success)
                 {
-                    msg = "\nSyntax Error.";
+                    msg = "Syntax Error.";
                     throw new FormatException(msg);
                 }
 
                 splitCmdText = cmdText.Split(" ");
-                _cmd.cmd = splitCmdText[0].Trim().ToLower();
-                _cmd.args = splitCmdText.Skip(1).ToArray();
-                _cmd.isChecked = true;
+                _cmd.Cmd = splitCmdText[0].Trim().ToLower();
+                _cmd.Args = splitCmdText.Skip(1).ToArray();
+                _cmd.IsChecked = true;
 
                 HandleCmd();
             }
@@ -93,13 +93,13 @@ namespace ue01_aktien
 
             try
             {
-                if (!_cmd.isChecked)
+                if (!_cmd.IsChecked)
                 {
                     msg = "Es wurde noch kein valides Kommando erfasst.";
                     throw new FormatException(msg);
                 }
 
-                switch (_cmd.cmd)
+                switch (_cmd.Cmd)
                 {
                     case "add":
                         HandleAdd();
@@ -131,7 +131,7 @@ namespace ue01_aktien
 
             try
             {
-                if (_cmd.cmd != "add")
+                if (_cmd.Cmd != "add")
                 {
                     msg = "Ungültiger Aufruf des Handlers für das ADD-Kommando.";
                     throw new FormatException(msg);
