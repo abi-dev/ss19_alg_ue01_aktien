@@ -4,19 +4,36 @@ namespace ue01_aktien
 {
     public class Hashtable
     {
-        public readonly int Size;
+        private readonly int _size;
 
-        private Share[] _shares;
+        private readonly Share[] _shares;
         
         public Hashtable(int size)
         {
-            Size = size;
+            _size = size;
             _shares = new Share[size];
         }
 
-        public void Add(Share share)
+        public void Add(ref Share share, string key)
         {
-            throw new NotImplementedException();
+            int hashtableIndex = 0;
+
+            hashtableIndex = Hash(key);
+            _shares[hashtableIndex] = share;
+            
+            Console.WriteLine(hashtableIndex);
+        }
+
+        public int Hash(string key)
+        {
+            int hashCode = 0, a = 127;
+
+            for(int i=0; i < key.Length; i++)
+            {
+                hashCode = (key[i] + a * hashCode) % _size;
+            }
+            
+            return hashCode;
         }
     }
 

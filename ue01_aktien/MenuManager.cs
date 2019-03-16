@@ -25,6 +25,9 @@ namespace ue01_aktien
             7. LOAD <filename>: Hashtabelle aus einer Datei laden
             8. QUIT: Programm beenden";
 
+        private Hashtable nameHashtable = new Hashtable(2039);
+        private Hashtable abbrHashtable = new Hashtable(2039);
+        
         private struct Command
         {
             public string Cmd;
@@ -135,13 +138,30 @@ namespace ue01_aktien
                 {
                     msg = "Ungültiger Aufruf des Handlers für das ADD-Kommando.";
                     throw new FormatException(msg);
+                } else if (_cmd.Args.Length != 3)
+                {
+                    msg = "Ungültige Anzahl an Parametern.";
+                    throw new FormatException(msg);
                 }
                 
-                throw new NotImplementedException();
+                Share shareToInsert = new Share();
+                shareToInsert.Name = _cmd.Args[0];
+                shareToInsert.Id = _cmd.Args[1];
+                shareToInsert.Abbr = _cmd.Args[2];
+                
+                nameHashtable.Add(ref shareToInsert, shareToInsert.Name);
+                abbrHashtable.Add(ref shareToInsert, shareToInsert.Abbr);
+                
+                Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");
+                Console.ReadKey();
+                ShowMenu();
             }
             catch (FormatException ex)
             {
                 Console.WriteLine(ex.Message);
+                Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");
+                Console.ReadKey();
+                ShowMenu();
             }
             
         }
