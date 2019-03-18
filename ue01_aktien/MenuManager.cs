@@ -13,20 +13,18 @@ namespace ue01_aktien
         private const string Menu = @"
         -----------------------------------------------------------------------------
         Menü:
-            1. ADD: Eine Aktie mit Namen, WKN und Kürzel hinzufügen.
-            2. DEL: Aktie löschen.
-            3. IMPORT: Kurswerte für eine Aktie aus einer csv Datei importieren
-            4. SEARCH: Eine Aktie in der Hashtabelle suchen (Eingabe von Namen
-            oder Kürzel) und den aktuellsten Kurseintrag mit
-            (Date,Open,High,Low,Close,Volume,Adj Close) ausgeben.
-            5. PLOT: Die Schlusskurse der letzten 30 Tage einer Aktie als ASCII
+            - ADD: add <name> <wkn> <kuerzel>
+            - DEL: del <name/kuerzel>
+            - IMPORT: Kurswerte für eine Aktie aus einer csv Datei importieren
+            - SEARCH: search <name/kuerzel>
+            - PLOT: Die Schlusskurse der letzten 30 Tage einer Aktie als ASCII
             Grafik ausgeben.
-            6. SAVE <filename>: Hashtabelle in eine Datei speichern
-            7. LOAD <filename>: Hashtabelle aus einer Datei laden
-            8. QUIT: Programm beenden";
+            - SAVE <filename>: Hashtabelle in eine Datei speichern
+            - LOAD <filename>: Hashtabelle aus einer Datei laden
+            - QUIT: Programm beenden";
 
-        private Hashtable nameHashtable = new Hashtable(2039);
-        private Hashtable abbrHashtable = new Hashtable(2039);
+        private Hashtable<Share> nameHashtable = new Hashtable<Share>(2039, (string key, Share share) => key == share.Name);
+        private Hashtable<Share> abbrHashtable = new Hashtable<Share>(2039, (string key, Share share) => key == share.Abbr);
         
         private struct Command
         {
@@ -107,6 +105,9 @@ namespace ue01_aktien
                     case "add":
                         HandleAdd();
                         break;
+                    case "search":
+                        HandleSearch();
+                        break;
                     case "quit":
                         Environment.Exit(1);
                         break;
@@ -125,7 +126,6 @@ namespace ue01_aktien
                 Console.ReadKey();
                 ShowMenu();
             }
-            
         }
 
         private void HandleAdd()
@@ -163,7 +163,49 @@ namespace ue01_aktien
                 Console.ReadKey();
                 ShowMenu();
             }
-            
+        }
+
+        private void HandleSearch()
+        {
+            string msg = "";
+            Share? abbrSearchRes = null, nameSearchRes = null;
+            Share foundAbbrEntry, foundNameEntry;
+
+            try
+            {
+                if (_cmd.Cmd != "search")
+                {
+                    msg = "Ungültiger Aufruf des Handlers für das SEARCH-Kommando.";
+                    throw new FormatException(msg);
+                } else if (_cmd.Args.Length != 1)
+                {
+                    msg = "Ungültige Anzahl an Parametern.";
+                    throw new FormatException(msg);
+                }
+
+                abbrSearchRes = abbrHashtable.Search(_cmd.Args[0]);
+                if (abbrSearchRes != null)
+                {
+                    foundAbbrEntry = abbrSearchRes ?? default(Share);
+                    Console.WriteLine("Aktie mit dem Kuerzel {0} gefunden!", foundAbbrEntry.Abbr);
+                }
+                nameSearchRes = nameHashtable.Search(_cmd.Args[0]);
+                if (nameSearchRes != null)
+                {
+                    foundNameEntry = nameSearchRes ?? default(Share);
+                    Console.WriteLine("Aktie mit dem Namen {0} gefunden!", foundNameEntry.Name);
+                }
+                Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");
+                Console.ReadKey();
+                ShowMenu();
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");
+                Console.ReadKey();
+                ShowMenu();
+            }
         }
     }
 }

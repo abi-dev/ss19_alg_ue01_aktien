@@ -2,26 +2,69 @@ using System;
 
 namespace ue01_aktien
 {
-    public class Hashtable
+    public class Hashtable<T> where T: struct
     {
         private readonly int _size;
 
-        private readonly Share[] _shares;
+        private readonly T?[] _items;
+
+        private Func<string, T, bool> _cmpItemToKey;
         
-        public Hashtable(int size)
+        public Hashtable(int size, Func<string, T, bool> cmpItemToKey)
         {
             _size = size;
-            _shares = new Share[size];
+            _items = new T?[size];
+            _cmpItemToKey = cmpItemToKey;
         }
 
-        public void Add(ref Share share, string key)
+        public void Add(ref T item, string key)
         {
-            int hashtableIndex = 0;
+            int initialIndex = 0, currentIndex = 0, i = 1;
+            string msg = "";
 
-            hashtableIndex = Hash(key);
-            _shares[hashtableIndex] = share;
-            
-            Console.WriteLine(hashtableIndex);
+            try
+            {
+                initialIndex = Hash(key);
+                currentIndex = initialIndex;
+
+                while (_items[currentIndex] != null)
+                {
+                    if (i >= _size)
+                    {
+                        msg = "Hashtabelle voll.";
+                        throw new FormatException(msg);
+                    }
+
+                    Console.WriteLine("Kollision am Index: {0}!", currentIndex);
+                    currentIndex = (initialIndex + i * i) % _size;
+                    i++;
+                }
+
+                _items[currentIndex] = item;
+
+                Console.WriteLine(currentIndex);
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+
+        public T? Search(string key)
+        {
+            int initialIndex = 0, currentIndex = 0;
+            initialIndex = Hash(key);
+            currentIndex = initialIndex;
+
+            for (int i=1; i < _size; i++)
+            {
+                if (_cmpItemToKey(key, _items[currentIndex] ?? default(T)))
+                    return _items[currentIndex];
+
+                currentIndex = (initialIndex + i * i) % _size;
+            }
+
+            return null;
         }
 
         public int Hash(string key)
