@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text.RegularExpressions;
+using Microsoft.VisualBasic.FileIO;
 
 namespace ue01_aktien
 {
@@ -18,7 +20,7 @@ namespace ue01_aktien
         Menü:
             - ADD: add <name> <wkn> <kuerzel>
             - DEL: del <name/kuerzel>
-            - IMPORT: Kurswerte für eine Aktie aus einer csv Datei importieren
+            - IMPORT: import <filename>
             - SEARCH: search <name/kuerzel>
             - PLOT: Die Schlusskurse der letzten 30 Tage einer Aktie als ASCII
             Grafik ausgeben.
@@ -118,6 +120,9 @@ namespace ue01_aktien
                         break;
                     case "load":
                         HandleLoad();
+                        break;
+                    case "import":
+                        HandleImport();
                         break;
                     case "quit":
                         Environment.Exit(1);
@@ -229,24 +234,33 @@ namespace ue01_aktien
                 {
                     msg = "Ungültiger Aufruf des Handlers für das SAVE-Kommando.";
                     throw new FormatException(msg);
-                } else if (_cmd.Args.Length != 1)
+                }
+                else if (_cmd.Args.Length != 1)
                 {
                     msg = "Ungültige Anzahl an Parametern.";
                     throw new FormatException(msg);
                 }
-                
-                IFormatter formatter = new BinaryFormatter();  
-                Stream stream = new FileStream( _cmd.Args[0]+".bin", FileMode.Create, FileAccess.Write, FileShare.None);  
-                formatter.Serialize(stream, _nameHashtable);  
-                stream.Close();  
-                
+
+                IFormatter formatter = new BinaryFormatter();
+                Stream stream = new FileStream("./saves/" + _cmd.Args[0] + ".bin", FileMode.Create, FileAccess.Write,
+                    FileShare.None);
+                formatter.Serialize(stream, _nameHashtable);
+                stream.Close();
+
                 Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");
                 Console.ReadKey();
                 ShowMenu();
             }
-            catch (FormatException ex)
+            catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                if (ex is FormatException)
+                {
+                    Console.WriteLine(ex.Message);
+                } else if (ex is FileNotFoundException)
+                {
+                    Console.WriteLine("Datei nicht gefunden.");
+                }
+                
                 Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");
                 Console.ReadKey();
                 ShowMenu();
@@ -272,7 +286,7 @@ namespace ue01_aktien
                 }
                 
                 IFormatter formatter = new BinaryFormatter();  
-                Stream stream = new FileStream( _cmd.Args[0]+".bin", FileMode.Open, FileAccess.Read, FileShare.Read);
+                Stream stream = new FileStream( "./saves/"+_cmd.Args[0]+".bin", FileMode.Open, FileAccess.Read, FileShare.Read);
                 readHashtable = (Hashtable<Share>) formatter.Deserialize(stream); 
                 stream.Close();
 
@@ -294,9 +308,82 @@ namespace ue01_aktien
                 Console.ReadKey();
                 ShowMenu();
             }
-            catch (FormatException ex)
+            catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                if (ex is FormatException)
+                {
+                    Console.WriteLine(ex.Message);
+                } else if (ex is FileNotFoundException)
+                {
+                    Console.WriteLine("Datei nicht gefunden.");
+                }
+                
+                Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");
+                Console.ReadKey();
+                ShowMenu();
+            }
+        }
+
+        public void HandleImport()
+        {
+            string msg = "";
+            Share? searchRes = null;
+
+            try
+            {
+                if (_cmd.Cmd != "import")
+                {
+                    msg = "Ungültiger Aufruf des Handlers für das IMPORT-Kommando.";
+                    throw new FormatException(msg);
+                } else if (_cmd.Args.Length != 1)
+                {
+                    msg = "Ungültige Anzahl an Parametern.";
+                    throw new FormatException(msg);
+                }
+
+                searchRes = _abbrHashtable.Search(_cmd.Args[0]);
+                searchRes = _nameHashtable.Search(_cmd.Args[0]);
+
+                if (searchRes != null)
+                {
+                    Share share = searchRes ?? default(Share);
+                    
+                    // SharePrice[] data = share.SharePrices;
+                    List<SharePrice> data = new List<SharePrice>(share.SharePrices);
+                    TextFieldParser csvParser = new TextFieldParser("./imports/"+_cmd.Args[0]+".csv");
+                    csvParser.SetDelimiters(";");
+
+                    csvParser.ReadLine();
+
+                    while (!csvParser.EndOfData)
+                    {
+                          string[] fields = csvParser.ReadFields();
+                          DateTime date = DateTime.Parse(fields[0]);
+                          
+                          for(int i=0; i < 30; i++)
+                          {   
+                              if (date < data[i].Date)
+                                    data.Insert(i, new SharePrice(date, float.Parse(fields[1]), float.Parse(fields[2]), float.Parse(fields[3]), float.Parse(fields[4]), int.Parse(fields[5]), float.Parse(fields[6])));
+                          }
+                    }
+
+                    share.SharePrices = data.Take(30).ToArray(); // TODO: use refernce, return ref from search?
+                }
+                
+                Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");
+                Console.ReadKey();
+                ShowMenu();
+            }
+            catch (Exception ex)
+            {
+                if (ex is FormatException)
+                {
+                    Console.WriteLine(ex.Message);
+                } else if (ex is FileNotFoundException)
+                {
+                    Console.WriteLine("Datei nicht gefunden.");
+                }
+                
                 Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");
                 Console.ReadKey();
                 ShowMenu();

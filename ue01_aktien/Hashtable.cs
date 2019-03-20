@@ -116,5 +116,16 @@ namespace ue01_aktien
         public float Close;
         public int Volume;
         public float AdjClose;
+
+        public SharePrice(DateTime date, float open, float high, float low, float close, int volume, float adjClose)
+        {
+            Date = date;
+            Open = open;
+            High = high;
+            Low = low;
+            Close = close;
+            Volume = volume;
+            AdjClose = adjClose;
+        }
     }
 }

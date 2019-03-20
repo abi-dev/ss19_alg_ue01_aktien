@@ -6,9 +6,12 @@
     <e p="C:\Users\benja\RiderProjects\ss19_alg_ue01_aktien" t="IncludeFlat">
       <e p="packages" t="ExcludeRecursive" />
       <e p="ue01_aktien" t="IncludeRecursive">
+        <e p=".gitignore" t="Include" />
         <e p="bin" t="ExcludeRecursive" />
-        <e p="bruder.bin" t="Include" />
         <e p="Hashtable.cs" t="Include" />
+        <e p="imports" t="Include">
+          <e p="msft.csv" t="Include" />
+        </e>
         <e p="MenuManager.cs" t="Include" />
         <e p="obj" t="ExcludeRecursive">
           <e p="Debug" t="Include">
@@ -18,7 +21,9 @@
           </e>
         </e>
         <e p="Program.cs" t="Include" />
-        <e p="test.bin" t="Include" />
+        <e p="saves" t="Include">
+          <e p="fff.bin" t="Include" />
+        </e>
         <e p="ue01_aktien.csproj" t="IncludeRecursive" />
       </e>
       <e p="ue01_aktien.sln" t="IncludeFlat" />
