@@ -10,3 +10,15 @@ C:\Users\benja\RiderProjects\ue01_aktien\ue01_aktien\obj\Debug\netcoreapp3.0\ue0
 C:\Users\benja\RiderProjects\ue01_aktien\ue01_aktien\obj\Debug\netcoreapp3.0\ue01_aktien.AssemblyInfo.cs
 C:\Users\benja\RiderProjects\ue01_aktien\ue01_aktien\obj\Debug\netcoreapp3.0\ue01_aktien.dll
 C:\Users\benja\RiderProjects\ue01_aktien\ue01_aktien\obj\Debug\netcoreapp3.0\ue01_aktien.pdb
+C:\Users\benja\RiderProjects\ss19_alg_ue01_aktien\ue01_aktien\bin\Debug\netcoreapp3.0\ue01_aktien.exe
+C:\Users\benja\RiderProjects\ss19_alg_ue01_aktien\ue01_aktien\bin\Debug\netcoreapp3.0\ue01_aktien.deps.json
+C:\Users\benja\RiderProjects\ss19_alg_ue01_aktien\ue01_aktien\bin\Debug\netcoreapp3.0\ue01_aktien.runtimeconfig.json
+C:\Users\benja\RiderProjects\ss19_alg_ue01_aktien\ue01_aktien\bin\Debug\netcoreapp3.0\ue01_aktien.runtimeconfig.dev.json
+C:\Users\benja\RiderProjects\ss19_alg_ue01_aktien\ue01_aktien\bin\Debug\netcoreapp3.0\ue01_aktien.dll
+C:\Users\benja\RiderProjects\ss19_alg_ue01_aktien\ue01_aktien\bin\Debug\netcoreapp3.0\ue01_aktien.pdb
+C:\Users\benja\RiderProjects\ss19_alg_ue01_aktien\ue01_aktien\obj\Debug\netcoreapp3.0\ue01_aktien.csprojAssemblyReference.cache
+C:\Users\benja\RiderProjects\ss19_alg_ue01_aktien\ue01_aktien\obj\Debug\netcoreapp3.0\ue01_aktien.csproj.CoreCompileInputs.cache
+C:\Users\benja\RiderProjects\ss19_alg_ue01_aktien\ue01_aktien\obj\Debug\netcoreapp3.0\ue01_aktien.AssemblyInfoInputs.cache
+C:\Users\benja\RiderProjects\ss19_alg_ue01_aktien\ue01_aktien\obj\Debug\netcoreapp3.0\ue01_aktien.AssemblyInfo.cs
+C:\Users\benja\RiderProjects\ss19_alg_ue01_aktien\ue01_aktien\obj\Debug\netcoreapp3.0\ue01_aktien.dll
+C:\Users\benja\RiderProjects\ss19_alg_ue01_aktien\ue01_aktien\obj\Debug\netcoreapp3.0\ue01_aktien.pdb

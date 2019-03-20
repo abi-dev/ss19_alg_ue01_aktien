@@ -2,12 +2,21 @@ using System;
 
 namespace ue01_aktien
 {
+    [Serializable]
     public class Hashtable<T> where T: struct
     {
         private readonly int _size;
 
-        private readonly T?[] _items;
+        private T?[] _items;
 
+        public T?[] Items
+        {
+            get => _items;
+            set => _items = value;
+        }        
+
+
+        [NonSerialized]
         private Func<string, T, bool> _cmpItemToKey;
         
         public Hashtable(int size, Func<string, T, bool> cmpItemToKey)
@@ -67,6 +76,14 @@ namespace ue01_aktien
             return null;
         }
 
+        public void Clear()
+        {
+            for (int i = 0; i < _items.Length; i++)
+            {
+                _items[i] = null;
+            }
+        }
+
         public int Hash(string key)
         {
             int hashCode = 0, a = 127;
@@ -80,6 +97,7 @@ namespace ue01_aktien
         }
     }
 
+    [Serializable]
     public struct Share
     {
         public string Name;
@@ -88,6 +106,7 @@ namespace ue01_aktien
         public SharePrice[] SharePrices;
     }
 
+    [Serializable]
     public struct SharePrice
     {
         public DateTime Date;

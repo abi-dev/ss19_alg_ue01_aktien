@@ -2,11 +2,12 @@
 <project version="4">
   <component name="ContentModelStore">
     <e p="C:\Users\benja\.Rider2018.3\system\extResources" t="IncludeRecursive" />
-    <e p="C:\Users\benja\.Rider2018.3\system\resharper-host\local\Transient\ReSharperHost\v183\SolutionCaches\_ue01_aktien.991128687.00" t="ExcludeRecursive" />
-    <e p="C:\Users\benja\RiderProjects\ue01_aktien" t="IncludeFlat">
+    <e p="C:\Users\benja\.Rider2018.3\system\resharper-host\local\Transient\ReSharperHost\v183\SolutionCaches\_ue01_aktien.226397029.00" t="ExcludeRecursive" />
+    <e p="C:\Users\benja\RiderProjects\ss19_alg_ue01_aktien" t="IncludeFlat">
       <e p="packages" t="ExcludeRecursive" />
       <e p="ue01_aktien" t="IncludeRecursive">
         <e p="bin" t="ExcludeRecursive" />
+        <e p="bruder.bin" t="Include" />
         <e p="Hashtable.cs" t="Include" />
         <e p="MenuManager.cs" t="Include" />
         <e p="obj" t="ExcludeRecursive">
@@ -17,6 +18,7 @@
           </e>
         </e>
         <e p="Program.cs" t="Include" />
+        <e p="test.bin" t="Include" />
         <e p="ue01_aktien.csproj" t="IncludeRecursive" />
       </e>
       <e p="ue01_aktien.sln" t="IncludeFlat" />

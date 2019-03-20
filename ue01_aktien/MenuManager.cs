@@ -1,5 +1,8 @@
 using System;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text.RegularExpressions;
 
 namespace ue01_aktien
@@ -19,12 +22,14 @@ namespace ue01_aktien
             - SEARCH: search <name/kuerzel>
             - PLOT: Die Schlusskurse der letzten 30 Tage einer Aktie als ASCII
             Grafik ausgeben.
-            - SAVE <filename>: Hashtabelle in eine Datei speichern
-            - LOAD <filename>: Hashtabelle aus einer Datei laden
+            - SAVE: save <filename>
+            - LOAD: load <filename>
             - QUIT: Programm beenden";
-
-        private Hashtable<Share> nameHashtable = new Hashtable<Share>(2039, (string key, Share share) => key == share.Name);
-        private Hashtable<Share> abbrHashtable = new Hashtable<Share>(2039, (string key, Share share) => key == share.Abbr);
+        
+        private const int Tablesize = 2039;
+        
+        private readonly Hashtable<Share> _nameHashtable = new Hashtable<Share>(Tablesize, (string key, Share share) => key == share.Name);
+        private readonly Hashtable<Share> _abbrHashtable = new Hashtable<Share>(Tablesize, (string key, Share share) => key == share.Abbr);
         
         private struct Command
         {
@@ -108,6 +113,12 @@ namespace ue01_aktien
                     case "search":
                         HandleSearch();
                         break;
+                    case "save":
+                        HandleSave();
+                        break;
+                    case "load":
+                        HandleLoad();
+                        break;
                     case "quit":
                         Environment.Exit(1);
                         break;
@@ -149,8 +160,8 @@ namespace ue01_aktien
                 shareToInsert.Id = _cmd.Args[1];
                 shareToInsert.Abbr = _cmd.Args[2];
                 
-                nameHashtable.Add(ref shareToInsert, shareToInsert.Name);
-                abbrHashtable.Add(ref shareToInsert, shareToInsert.Abbr);
+                _nameHashtable.Add(ref shareToInsert, shareToInsert.Name);
+                _abbrHashtable.Add(ref shareToInsert, shareToInsert.Abbr);
                 
                 Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");
                 Console.ReadKey();
@@ -183,18 +194,102 @@ namespace ue01_aktien
                     throw new FormatException(msg);
                 }
 
-                abbrSearchRes = abbrHashtable.Search(_cmd.Args[0]);
+                abbrSearchRes = _abbrHashtable.Search(_cmd.Args[0]);
                 if (abbrSearchRes != null)
                 {
                     foundAbbrEntry = abbrSearchRes ?? default(Share);
                     Console.WriteLine("Aktie mit dem Kuerzel {0} gefunden!", foundAbbrEntry.Abbr);
                 }
-                nameSearchRes = nameHashtable.Search(_cmd.Args[0]);
+                nameSearchRes = _nameHashtable.Search(_cmd.Args[0]);
                 if (nameSearchRes != null)
                 {
                     foundNameEntry = nameSearchRes ?? default(Share);
                     Console.WriteLine("Aktie mit dem Namen {0} gefunden!", foundNameEntry.Name);
                 }
+                Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");
+                Console.ReadKey();
+                ShowMenu();
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");
+                Console.ReadKey();
+                ShowMenu();
+            }
+        }
+
+        private void HandleSave()
+        {
+            string msg = "";
+
+            try
+            {
+                if (_cmd.Cmd != "save")
+                {
+                    msg = "Ungültiger Aufruf des Handlers für das SAVE-Kommando.";
+                    throw new FormatException(msg);
+                } else if (_cmd.Args.Length != 1)
+                {
+                    msg = "Ungültige Anzahl an Parametern.";
+                    throw new FormatException(msg);
+                }
+                
+                IFormatter formatter = new BinaryFormatter();  
+                Stream stream = new FileStream( _cmd.Args[0]+".bin", FileMode.Create, FileAccess.Write, FileShare.None);  
+                formatter.Serialize(stream, _nameHashtable);  
+                stream.Close();  
+                
+                Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");
+                Console.ReadKey();
+                ShowMenu();
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");
+                Console.ReadKey();
+                ShowMenu();
+            }
+        }
+        
+        private void HandleLoad()
+        {
+            string msg = "";
+            Hashtable<Share> readHashtable;
+            Share shareToInsert;
+
+            try
+            {
+                if (_cmd.Cmd != "load")
+                {
+                    msg = "Ungültiger Aufruf des Handlers für das LOAD-Kommando.";
+                    throw new FormatException(msg);
+                } else if (_cmd.Args.Length != 1)
+                {
+                    msg = "Ungültige Anzahl an Parametern.";
+                    throw new FormatException(msg);
+                }
+                
+                IFormatter formatter = new BinaryFormatter();  
+                Stream stream = new FileStream( _cmd.Args[0]+".bin", FileMode.Open, FileAccess.Read, FileShare.Read);
+                readHashtable = (Hashtable<Share>) formatter.Deserialize(stream); 
+                stream.Close();
+
+                _nameHashtable.Items = readHashtable.Items;
+                _abbrHashtable.Clear();
+
+                for (int i = 0; i < Tablesize; i++)
+                {
+                    if (readHashtable.Items[i] != null)
+                    {
+                        shareToInsert = readHashtable.Items[i] ?? default(Share);
+                        _abbrHashtable.Add(ref shareToInsert, shareToInsert.Abbr); // TODO: Copies share then refs them?
+                        // TODO: seperate folder for saved files?
+                    }
+                        
+                }
+                
                 Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");
                 Console.ReadKey();
                 ShowMenu();
