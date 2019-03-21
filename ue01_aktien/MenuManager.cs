@@ -30,8 +30,8 @@ namespace ue01_aktien
         
         private const int Tablesize = 2039;
         
-        private readonly Hashtable<Share> _nameHashtable = new Hashtable<Share>(Tablesize, (string key, Share share) => key == share.Name);
-        private readonly Hashtable<Share> _abbrHashtable = new Hashtable<Share>(Tablesize, (string key, Share share) => key == share.Abbr);
+        private readonly Hashtable<Share> _nameHashtable = new Hashtable<Share>(Tablesize, (key, share) => key == share.Name);
+        private readonly Hashtable<Share> _abbrHashtable = new Hashtable<Share>(Tablesize, (key, share) => key == share.Abbr);
         
         private struct Command
         {
@@ -41,11 +41,6 @@ namespace ue01_aktien
         }
         
         private Command _cmd;
-        
-        public MenuManager()
-        {
-            
-        }
 
         public void InitMenu()
         {
@@ -57,7 +52,7 @@ namespace ue01_aktien
 
         private void ShowMenu()
         {
-            string cmdText = "";
+            string cmdText;
             
             Console.WriteLine(Menu);
             cmdText = Console.ReadLine();
@@ -66,7 +61,7 @@ namespace ue01_aktien
 
         private void ParseCmd(string cmdText)
         {
-            string msg = "";
+            string msg;
             string[] splitCmdText;
             
             try
@@ -97,7 +92,7 @@ namespace ue01_aktien
 
         private void HandleCmd()
         {
-            string msg = "";
+            string msg;
 
             try
             {
@@ -146,7 +141,7 @@ namespace ue01_aktien
 
         private void HandleAdd()
         {
-            string msg = "";
+            string msg;
 
             try
             {
@@ -183,10 +178,8 @@ namespace ue01_aktien
 
         private void HandleSearch()
         {
-            string msg = "";
-            Share? searchRes = null;
-            Share foundEntry = new Share();
-            bool entryHasBeenFound = false;
+            string msg;
+            Share searchRes;
 
             try
             {
@@ -203,32 +196,28 @@ namespace ue01_aktien
                 searchRes = _abbrHashtable.Search(_cmd.Args[0]);
                 if (searchRes != null)
                 {
-                    foundEntry = searchRes ?? default(Share);
-                    Console.WriteLine("Aktie durch den Kuerzel {0} gefunden!", foundEntry.Abbr);
-                    entryHasBeenFound = true;
+                    Console.WriteLine("Aktie durch den Kuerzel {0} gefunden!", searchRes.Abbr);
                 }
                 else
                 {
                     searchRes = _nameHashtable.Search(_cmd.Args[0]);
-                    if (searchRes != null)
+                    if (searchRes  != null)
                     {
-                        foundEntry = searchRes ?? default(Share);
-                        Console.WriteLine("Aktie durch den Namen {0} gefunden!", foundEntry.Name);
-                        entryHasBeenFound = true;
+                        Console.WriteLine("Aktie durch den Namen {0} gefunden!", searchRes.Name);
                     }
                 }
 
-                if (entryHasBeenFound && foundEntry.SharePrices != null)
+                if (searchRes?.SharePrices != null)
                 {
-                    Console.WriteLine("Open: {0}", foundEntry.SharePrices[0].Open);
-                    Console.WriteLine("High: {0}", foundEntry.SharePrices[0].High);
-                    Console.WriteLine("Low: {0}", foundEntry.SharePrices[0].Low);
-                    Console.WriteLine("Close: {0}", foundEntry.SharePrices[0].Close);
-                    Console.WriteLine("Volume: {0}", foundEntry.SharePrices[0].Volume);
-                    Console.WriteLine("Adj. Close: {0}", foundEntry.SharePrices[0].AdjClose);
-                } else if (!entryHasBeenFound)
+                    Console.WriteLine("Open: {0}", searchRes.SharePrices[0].Open);
+                    Console.WriteLine("High: {0}", searchRes.SharePrices[0].High);
+                    Console.WriteLine("Low: {0}", searchRes.SharePrices[0].Low);
+                    Console.WriteLine("Close: {0}", searchRes.SharePrices[0].Close);
+                    Console.WriteLine("Volume: {0}", searchRes.SharePrices[0].Volume);
+                    Console.WriteLine("Adj. Close: {0}", searchRes.SharePrices[0].AdjClose);
+                } else if (searchRes != null)
                 {
-                    Console.WriteLine("Keine Aktie gefunden.");
+                    Console.WriteLine("Keine Kursdaten gefunden.");
                 }
                     
                 Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");
@@ -246,7 +235,7 @@ namespace ue01_aktien
 
         private void HandleSave()
         {
-            string msg = "";
+            string msg;
 
             try
             {
@@ -289,9 +278,8 @@ namespace ue01_aktien
         
         private void HandleLoad()
         {
-            string msg = "";
+            string msg;
             Hashtable<Share> readHashtable;
-            Share shareToInsert;
 
             try
             {
@@ -317,7 +305,7 @@ namespace ue01_aktien
                 {
                     if (readHashtable.Items[i] != null)
                     {
-                        shareToInsert = readHashtable.Items[i] ?? default(Share);
+                        ref Share shareToInsert = ref readHashtable.Items[i];
                         _abbrHashtable.Add(ref shareToInsert, shareToInsert.Abbr); // TODO: Copies share then refs them?
                     }
                         
@@ -329,6 +317,7 @@ namespace ue01_aktien
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex);
                 if (ex is FormatException)
                 {
                     Console.WriteLine(ex.Message);
@@ -345,8 +334,7 @@ namespace ue01_aktien
 
         public void HandleImport()
         {
-            string msg = "";
-            
+            string msg;
 
             try
             {
@@ -360,20 +348,17 @@ namespace ue01_aktien
                     throw new FormatException(msg);
                 }
 
-                ref Share? searchRes = ref _abbrHashtable.Search(_cmd.Args[0]);
+                Share searchRes = _abbrHashtable.Search(_cmd.Args[0]);
 
-                if (!searchRes.HasValue)
-                    searchRes = ref _nameHashtable.Search(_cmd.Args[0]);
+                if (searchRes == null)
+                    searchRes = _nameHashtable.Search(_cmd.Args[0]);
 
-                if (searchRes.HasValue)
+                if (searchRes != null)
                 {
-                    Share share = searchRes ?? default(Share);
-                    
-                    // SharePrice[] data = share.SharePrices;
                     List<SharePrice> data;
-                    if (share.SharePrices != null)
+                    if (searchRes.SharePrices != null)
                     {
-                        data = new List<SharePrice>(share.SharePrices);
+                        data = new List<SharePrice>(searchRes.SharePrices);
                     }   
                     else
                     {
@@ -410,6 +395,10 @@ namespace ue01_aktien
                     }
 
                     searchRes.SharePrices = data.Take(30).ToArray(); // TODO: use refernce, return ref from search?
+                }
+                else
+                {
+                    Console.WriteLine("Keine Aktie unter diesem Namen gefunden. Vor dem Importieren muss die Aktie anlegt worden sein.");
                 }
                 
                 Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");

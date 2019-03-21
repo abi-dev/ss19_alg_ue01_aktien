@@ -22,6 +22,7 @@
         </e>
         <e p="Program.cs" t="Include" />
         <e p="saves" t="Include">
+          <e p="bruh.bin" t="Include" />
           <e p="test.bin" t="Include" />
         </e>
         <e p="ue01_aktien.csproj" t="IncludeRecursive" />

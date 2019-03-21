@@ -3,15 +3,15 @@ using System;
 namespace ue01_aktien
 {
     [Serializable]
-    public class Hashtable<T> where T: struct
+    public class Hashtable<T> where T: class, new()
     {
         private readonly int _size;
 
-        private T?[] _items;
+        private T[] _items;
         
-        private T? _nullItem = new T();
+        private T _nullItem;
 
-        public T?[] Items
+        public T[] Items
         {
             get => _items;
             set => _items = value;
@@ -19,19 +19,19 @@ namespace ue01_aktien
 
 
         [NonSerialized]
-        private Func<string, T, bool> _cmpItemToKey;
+        private readonly Func<string, T, bool> _cmpItemToKey;
         
         public Hashtable(int size, Func<string, T, bool> cmpItemToKey)
         {
             _size = size;
-            _items = new T?[size];
+            _items = new T[size];
             _cmpItemToKey = cmpItemToKey;
         }
 
         public void Add(ref T item, string key)
         {
-            int initialIndex = 0, currentIndex = 0, i = 1;
-            string msg = "";
+            int initialIndex, currentIndex, i = 1;
+            string msg;
 
             try
             {
@@ -55,21 +55,26 @@ namespace ue01_aktien
 
                 Console.WriteLine(currentIndex);
             }
-            catch (FormatException ex)
+            catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex);
+                if(ex is FormatException)
+                    Console.WriteLine(ex.Message);
             }
         }
 
-        public ref T? Search(string key)
+        public ref T Search(string key)
         {
-            int initialIndex = 0, currentIndex = 0;
+            int initialIndex, currentIndex;
             initialIndex = Hash(key);
             currentIndex = initialIndex;
 
+            if (_items[initialIndex] == null)
+                return ref _nullItem;
+
             for (int i=1; i < _size; i++)
             {
-                if (_cmpItemToKey(key, _items[currentIndex] ?? default(T)))
+                if (_cmpItemToKey(key, _items[currentIndex]))
                     return ref _items[currentIndex];
 
                 currentIndex = (initialIndex + i * i) % _size;
