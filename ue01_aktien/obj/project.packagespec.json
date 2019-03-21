@@ -1,10 +1,10 @@
 ﻿{
   "version": "1.0.0",
   "restore": {
-    "projectUniqueName": "C:\\Users\\benja\\RiderProjects\\ss19_alg_ue01_aktien\\ue01_aktien\\ue01_aktien.csproj",
+    "projectUniqueName": "C:\\Users\\benja\\RiderProjects\\ue01_aktien\\ue01_aktien\\ue01_aktien.csproj",
     "projectName": "ue01_aktien",
-    "projectPath": "C:\\Users\\benja\\RiderProjects\\ss19_alg_ue01_aktien\\ue01_aktien\\ue01_aktien.csproj",
-    "outputPath": "C:\\Users\\benja\\RiderProjects\\ss19_alg_ue01_aktien\\ue01_aktien\\obj\\",
+    "projectPath": "C:\\Users\\benja\\RiderProjects\\ue01_aktien\\ue01_aktien\\ue01_aktien.csproj",
+    "outputPath": "C:\\Users\\benja\\RiderProjects\\ue01_aktien\\ue01_aktien\\obj\\",
     "projectStyle": "PackageReference",
     "fallbackFolders": [
       "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"

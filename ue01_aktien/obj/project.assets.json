@@ -63,11 +63,12 @@
       ]
     },
     "Microsoft.NETCore.Targets/2.0.0": {
-      "sha512": "odP/tJj1z6GylFpNo7pMtbd/xQgTC3Ex2If63dRTL38bBNMwsBnJ+RceUIyHdRBC0oik/3NehYT+oECwBhIM3Q==",
+      "sha512": "mJnCMoBfWL0lxxlBFJ/8cZKTfPpI82TekZkUqvSCBtunUaaqr2LVeWl1zQYdanAdk4Ddf1HCwb8+DNYaNFBk1w==",
       "type": "package",
       "path": "microsoft.netcore.targets/2.0.0",
       "files": [
         ".nupkg.metadata",
+        ".signature.p7s",
         "LICENSE.TXT",
         "THIRD-PARTY-NOTICES.TXT",
         "lib/netstandard1.0/_._",
@@ -172,22 +173,24 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\benja\\RiderProjects\\ss19_alg_ue01_aktien\\ue01_aktien\\ue01_aktien.csproj",
+      "projectUniqueName": "C:\\Users\\benja\\RiderProjects\\ue01_aktien\\ue01_aktien\\ue01_aktien.csproj",
       "projectName": "ue01_aktien",
-      "projectPath": "C:\\Users\\benja\\RiderProjects\\ss19_alg_ue01_aktien\\ue01_aktien\\ue01_aktien.csproj",
+      "projectPath": "C:\\Users\\benja\\RiderProjects\\ue01_aktien\\ue01_aktien\\ue01_aktien.csproj",
       "packagesPath": "C:\\Users\\benja\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\benja\\RiderProjects\\ss19_alg_ue01_aktien\\ue01_aktien\\obj\\",
+      "outputPath": "C:\\Users\\benja\\RiderProjects\\ue01_aktien\\ue01_aktien\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
       ],
       "configFilePaths": [
-        "C:\\Users\\benja\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\benja\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
         "netcoreapp3.0"
       ],
       "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {

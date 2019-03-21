@@ -8,6 +8,8 @@ namespace ue01_aktien
         private readonly int _size;
 
         private T?[] _items;
+        
+        private T? _nullItem = new T();
 
         public T?[] Items
         {
@@ -59,7 +61,7 @@ namespace ue01_aktien
             }
         }
 
-        public T? Search(string key)
+        public ref T? Search(string key)
         {
             int initialIndex = 0, currentIndex = 0;
             initialIndex = Hash(key);
@@ -68,12 +70,12 @@ namespace ue01_aktien
             for (int i=1; i < _size; i++)
             {
                 if (_cmpItemToKey(key, _items[currentIndex] ?? default(T)))
-                    return _items[currentIndex];
+                    return ref _items[currentIndex];
 
                 currentIndex = (initialIndex + i * i) % _size;
             }
 
-            return null;
+            return ref _nullItem;
         }
 
         public void Clear()
@@ -98,7 +100,7 @@ namespace ue01_aktien
     }
 
     [Serializable]
-    public struct Share
+    public class Share
     {
         public string Name;
         public string Id; // =WKN
@@ -107,7 +109,7 @@ namespace ue01_aktien
     }
 
     [Serializable]
-    public struct SharePrice
+    public class SharePrice
     {
         public DateTime Date;
         public float Open;

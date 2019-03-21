@@ -184,8 +184,9 @@ namespace ue01_aktien
         private void HandleSearch()
         {
             string msg = "";
-            Share? abbrSearchRes = null, nameSearchRes = null;
-            Share foundAbbrEntry, foundNameEntry;
+            Share? searchRes = null;
+            Share foundEntry = new Share();
+            bool entryHasBeenFound = false;
 
             try
             {
@@ -199,18 +200,37 @@ namespace ue01_aktien
                     throw new FormatException(msg);
                 }
 
-                abbrSearchRes = _abbrHashtable.Search(_cmd.Args[0]);
-                if (abbrSearchRes != null)
+                searchRes = _abbrHashtable.Search(_cmd.Args[0]);
+                if (searchRes != null)
                 {
-                    foundAbbrEntry = abbrSearchRes ?? default(Share);
-                    Console.WriteLine("Aktie mit dem Kuerzel {0} gefunden!", foundAbbrEntry.Abbr);
+                    foundEntry = searchRes ?? default(Share);
+                    Console.WriteLine("Aktie durch den Kuerzel {0} gefunden!", foundEntry.Abbr);
+                    entryHasBeenFound = true;
                 }
-                nameSearchRes = _nameHashtable.Search(_cmd.Args[0]);
-                if (nameSearchRes != null)
+                else
                 {
-                    foundNameEntry = nameSearchRes ?? default(Share);
-                    Console.WriteLine("Aktie mit dem Namen {0} gefunden!", foundNameEntry.Name);
+                    searchRes = _nameHashtable.Search(_cmd.Args[0]);
+                    if (searchRes != null)
+                    {
+                        foundEntry = searchRes ?? default(Share);
+                        Console.WriteLine("Aktie durch den Namen {0} gefunden!", foundEntry.Name);
+                        entryHasBeenFound = true;
+                    }
                 }
+
+                if (entryHasBeenFound && foundEntry.SharePrices != null)
+                {
+                    Console.WriteLine("Open: {0}", foundEntry.SharePrices[0].Open);
+                    Console.WriteLine("High: {0}", foundEntry.SharePrices[0].High);
+                    Console.WriteLine("Low: {0}", foundEntry.SharePrices[0].Low);
+                    Console.WriteLine("Close: {0}", foundEntry.SharePrices[0].Close);
+                    Console.WriteLine("Volume: {0}", foundEntry.SharePrices[0].Volume);
+                    Console.WriteLine("Adj. Close: {0}", foundEntry.SharePrices[0].AdjClose);
+                } else if (!entryHasBeenFound)
+                {
+                    Console.WriteLine("Keine Aktie gefunden.");
+                }
+                    
                 Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");
                 Console.ReadKey();
                 ShowMenu();
@@ -299,7 +319,6 @@ namespace ue01_aktien
                     {
                         shareToInsert = readHashtable.Items[i] ?? default(Share);
                         _abbrHashtable.Add(ref shareToInsert, shareToInsert.Abbr); // TODO: Copies share then refs them?
-                        // TODO: seperate folder for saved files?
                     }
                         
                 }
@@ -327,7 +346,7 @@ namespace ue01_aktien
         public void HandleImport()
         {
             string msg = "";
-            Share? searchRes = null;
+            
 
             try
             {
@@ -341,17 +360,27 @@ namespace ue01_aktien
                     throw new FormatException(msg);
                 }
 
-                searchRes = _abbrHashtable.Search(_cmd.Args[0]);
-                searchRes = _nameHashtable.Search(_cmd.Args[0]);
+                ref Share? searchRes = ref _abbrHashtable.Search(_cmd.Args[0]);
 
-                if (searchRes != null)
+                if (!searchRes.HasValue)
+                    searchRes = ref _nameHashtable.Search(_cmd.Args[0]);
+
+                if (searchRes.HasValue)
                 {
                     Share share = searchRes ?? default(Share);
                     
                     // SharePrice[] data = share.SharePrices;
-                    List<SharePrice> data = new List<SharePrice>(share.SharePrices);
+                    List<SharePrice> data;
+                    if (share.SharePrices != null)
+                    {
+                        data = new List<SharePrice>(share.SharePrices);
+                    }   
+                    else
+                    {
+                        data = new List<SharePrice>(30);
+                    }
                     TextFieldParser csvParser = new TextFieldParser("./imports/"+_cmd.Args[0]+".csv");
-                    csvParser.SetDelimiters(";");
+                    csvParser.SetDelimiters(",");
 
                     csvParser.ReadLine();
 
@@ -359,15 +388,28 @@ namespace ue01_aktien
                     {
                           string[] fields = csvParser.ReadFields();
                           DateTime date = DateTime.Parse(fields[0]);
+
+                          SharePrice priceToInsert = new SharePrice(date, float.Parse(fields[1]),
+                              float.Parse(fields[2]), float.Parse(fields[3]), float.Parse(fields[4]),
+                              int.Parse(fields[5]), float.Parse(fields[6]));
                           
                           for(int i=0; i < 30; i++)
-                          {   
-                              if (date < data[i].Date)
-                                    data.Insert(i, new SharePrice(date, float.Parse(fields[1]), float.Parse(fields[2]), float.Parse(fields[3]), float.Parse(fields[4]), int.Parse(fields[5]), float.Parse(fields[6])));
+                          {
+                              if (i >= data.Count)
+                              {
+                                  data.Add(priceToInsert);
+                                  break;
+                              }
+
+                              if (date > data[i].Date)
+                              {
+                                  data.Insert(i, priceToInsert);
+                                  break;
+                              }    
                           }
                     }
 
-                    share.SharePrices = data.Take(30).ToArray(); // TODO: use refernce, return ref from search?
+                    searchRes.SharePrices = data.Take(30).ToArray(); // TODO: use refernce, return ref from search?
                 }
                 
                 Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");
@@ -376,6 +418,7 @@ namespace ue01_aktien
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex);
                 if (ex is FormatException)
                 {
                     Console.WriteLine(ex.Message);
