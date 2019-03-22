@@ -11,12 +11,11 @@ namespace ue01_aktien
 {
     public class MenuManager
     {
-        private const string Welcome = @"
+        private const string WelcomeText = @"
         Willkommen im ALG Aktien Manager!
         © Benjamin Ableidinger, Michael Brunner
         Ein Projekt im Rahmen der LV Algorithmen und Datenstrukturen.";
-        private const string Menu = @"
-        -----------------------------------------------------------------------------
+        private const string MenuText = @"
         Menü:
             - ADD: add <name> <wkn> <kuerzel>
             - DEL: del <name/kuerzel>
@@ -46,15 +45,24 @@ namespace ue01_aktien
         {
             _cmd.IsChecked = false;
             
-            Console.WriteLine(Welcome);
-            ShowMenu();
+            Console.WriteLine(WelcomeText);
+            ShowMenu(false);
         }
 
-        private void ShowMenu()
+        private void ShowMenu(bool clrScreen = true)
         {
             string cmdText;
+
+            if (clrScreen)
+            {
+                Console.Clear();
+            }
+            else
+            {
+                WriteSpacer();
+            }
             
-            Console.WriteLine(Menu);
+            Console.WriteLine(MenuText);
             cmdText = Console.ReadLine();
             ParseCmd(cmdText);
         }
@@ -118,6 +126,9 @@ namespace ue01_aktien
                         break;
                     case "import":
                         HandleImport();
+                        break;
+                    case "plot":
+                        HandlePlot();
                         break;
                     case "quit":
                         Environment.Exit(1);
@@ -332,7 +343,7 @@ namespace ue01_aktien
             }
         }
 
-        public void HandleImport()
+        private void HandleImport()
         {
             string msg;
 
@@ -419,6 +430,145 @@ namespace ue01_aktien
                 Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");
                 Console.ReadKey();
                 ShowMenu();
+            }
+        }
+
+        private void HandlePlot()
+        {
+            string msg;
+            int x, y, startX = 10, startY = 6;
+            float maxValue = 0, minValue = int.MaxValue;
+
+            try
+            {
+                if (_cmd.Cmd != "plot")
+                {
+                    msg = "Ungültiger Aufruf des Handlers für das PLOT-Kommando.";
+                    throw new FormatException(msg);
+                }
+                else if (_cmd.Args.Length != 1)
+                {
+                    msg = "Ungültige Anzahl an Parametern.";
+                    throw new FormatException(msg);
+                }
+
+                Share searchRes = _abbrHashtable.Search(_cmd.Args[0]);
+
+                if (searchRes == null)
+                    searchRes = _nameHashtable.Search(_cmd.Args[0]);
+
+                if (searchRes != null)
+                {
+                    if (searchRes.SharePrices == null)
+                    {
+                        Console.WriteLine("Keine Kursdaten gefunden.");
+                    }
+                    else
+                    {
+                        // get max and min value
+                        for (int i = 0; i < searchRes.SharePrices.Length; i++)
+                        {
+                            if (searchRes.SharePrices[i].Close > maxValue)
+                                maxValue = searchRes.SharePrices[i].Close;
+
+                            if (searchRes.SharePrices[i].Close < minValue)
+                                minValue = searchRes.SharePrices[i].Close;
+                        }
+                        
+                        Console.Clear();
+                        Console.WriteLine("Name der Aktie: {0}({1}), Schlusskurse", searchRes.Name, searchRes.Abbr);
+                        Console.WriteLine("Anzahl Werte: {0}", searchRes.SharePrices.Length);
+                        Console.Write("Datum erster Wert: {0}", searchRes.SharePrices[0].Date.ToString("d MMM yyyy"));
+                        Console.SetCursorPosition(40, Console.CursorTop);
+                        Console.Write("Datum letzter Wert: {0}\n", searchRes.SharePrices[searchRes.SharePrices.Length-1].Date.ToString("d MMM yyyy"));
+                        Console.Write("Max. Wert: {0}", maxValue);
+                        Console.SetCursorPosition(40, Console.CursorTop);
+                        Console.Write("Min. Wert: {0}\n", minValue);
+                        
+                        WriteSpacer();
+
+                        x = startX;
+                        y = startY;
+                        Console.SetCursorPosition(x, y);
+                        while(y <= startY + 10)
+                        {
+                            WriteAt(x, y, '│');
+                            y++;
+                        }
+                        WriteAt(x, y, '└');
+                        x++;
+                        while (x <= startX + 61)
+                        {
+                            WriteAt(x, y, '─');
+                            x++;
+                        }
+
+                        x = startX + 61;
+                        y = startY + 10;
+                        for (int i = 0; i < searchRes.SharePrices.Length; i++)
+                        {
+                            x = startX + 61 - i * 2;
+                            y = startY + 10;
+                            int value = (int)(((searchRes.SharePrices[i].Close - minValue) / (maxValue - minValue)) * 10);
+                            int endY = y - value;
+
+                            while (y >= endY)
+                            {
+                                WriteAt(x, y, '█');
+                                y--;
+                            }
+                        }
+                        
+                        Console.SetCursorPosition(1, 10);
+                        Console.Write("Schlussk.");
+                        
+                        Console.SetCursorPosition(36, 18);
+                        Console.Write("Datum");
+                        
+                        Console.Write("\n\n");
+                    }
+                }
+
+                Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");
+                Console.ReadKey();
+                ShowMenu();
+            }
+            catch (Exception ex)
+            {
+                if (ex is FormatException)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                else
+                {
+                    Console.WriteLine(ex);
+                }
+                
+                Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");
+                Console.ReadKey();
+                ShowMenu();
+            }
+        }
+
+        private void WriteSpacer()
+        {
+            for (int i=0; i < Console.BufferWidth; i++)
+            {
+                Console.Write("━");
+            }
+            Console.WriteLine();
+        }
+
+        private void WriteAt(int x, int y, char c)
+        {
+            try
+            {
+                Console.SetCursorPosition(x, y);
+                Console.Write(c);
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                Console.WriteLine(ex);
             }
         }
     }
