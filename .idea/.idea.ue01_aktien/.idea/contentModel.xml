@@ -7,6 +7,7 @@
       <e p="packages" t="ExcludeRecursive" />
       <e p="ue01_aktien" t="IncludeRecursive">
         <e p=".gitignore" t="Include" />
+        <e p="ableidinger_brunner_ue01.zip" t="Include" />
         <e p="bin" t="ExcludeRecursive" />
         <e p="Hashtable.cs" t="Include" />
         <e p="imports" t="Include">
@@ -25,12 +26,7 @@
         </e>
         <e p="Program.cs" t="Include" />
         <e p="saves" t="Include">
-          <e p="abgabe.bin" t="Include" />
-          <e p="abgabe2.bin" t="Include" />
           <e p="abgabe3.bin" t="Include" />
-          <e p="bruh.bin" t="Include" />
-          <e p="lulul.bin" t="Include" />
-          <e p="test.bin" t="Include" />
         </e>
         <e p="ue01_aktien.csproj" t="IncludeRecursive" />
       </e>

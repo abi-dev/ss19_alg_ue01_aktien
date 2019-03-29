@@ -616,10 +616,6 @@ namespace ue01_aktien
                         Console.Write("\n\n");
                     }
                 }
-                else
-                {
-                    Console.WriteLine("Keine Aktie gefunden.");
-                }
 
                 Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");
                 Console.ReadKey();
