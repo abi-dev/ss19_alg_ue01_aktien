@@ -10,7 +10,10 @@
         <e p="bin" t="ExcludeRecursive" />
         <e p="Hashtable.cs" t="Include" />
         <e p="imports" t="Include">
+          <e p="GOOG.csv" t="Include" />
           <e p="msft.csv" t="Include" />
+          <e p="MSFTnew.csv" t="Include" />
+          <e p="TSLA.csv" t="Include" />
         </e>
         <e p="MenuManager.cs" t="Include" />
         <e p="obj" t="ExcludeRecursive">
@@ -22,7 +25,11 @@
         </e>
         <e p="Program.cs" t="Include" />
         <e p="saves" t="Include">
+          <e p="abgabe.bin" t="Include" />
+          <e p="abgabe2.bin" t="Include" />
+          <e p="abgabe3.bin" t="Include" />
           <e p="bruh.bin" t="Include" />
+          <e p="lulul.bin" t="Include" />
           <e p="test.bin" t="Include" />
         </e>
         <e p="ue01_aktien.csproj" t="IncludeRecursive" />

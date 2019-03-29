@@ -27,8 +27,9 @@ namespace ue01_aktien
             - LOAD: load <filename>
             - QUIT: Programm beenden";
         
-        private const int Tablesize = 2039;
+        private const int Tablesize = 2039;    // => <50% fill factor, 509*4+3=2039, prime
         
+        // two hashtable store references to shares, using the share name and abbr as keys, constructor gets compare func
         private readonly Hashtable<Share> _nameHashtable = new Hashtable<Share>(Tablesize, (key, share) => key == share.Name);
         private readonly Hashtable<Share> _abbrHashtable = new Hashtable<Share>(Tablesize, (key, share) => key == share.Abbr);
         
@@ -36,10 +37,10 @@ namespace ue01_aktien
         {
             public string Cmd;
             public string[] Args;
-            public bool IsChecked;
+            public bool IsChecked; // has the command been parsed?
         }
         
-        private Command _cmd;
+        private Command _cmd; // stores the current command
 
         public void InitMenu()
         {
@@ -63,7 +64,7 @@ namespace ue01_aktien
             }
             
             Console.WriteLine(MenuText);
-            cmdText = Console.ReadLine();
+            cmdText = Console.ReadLine(); // read command
             ParseCmd(cmdText);
         }
 
@@ -74,7 +75,9 @@ namespace ue01_aktien
             
             try
             {
-                var match = Regex.Match(cmdText, @"^[a-zA-Z]*(\s[a-zA-Z]*)*");
+                // regex matches everything that has a word of a-z followed by parameters which may use a-z and digits,
+                // seperated by whitespaces
+                var match = Regex.Match(cmdText, @"^[a-zA-Z]*(\s[a-zA-Z1-9]*)*");
             
                 if (!match.Success)
                 {
@@ -83,9 +86,9 @@ namespace ue01_aktien
                 }
 
                 splitCmdText = cmdText.Split(" ");
-                _cmd.Cmd = splitCmdText[0].Trim().ToLower();
-                _cmd.Args = splitCmdText.Skip(1).ToArray();
-                _cmd.IsChecked = true;
+                _cmd.Cmd = splitCmdText[0].Trim().ToLower(); // no case sensitivity
+                _cmd.Args = splitCmdText.Skip(1).ToArray();  // skip first word, which is the command itself
+                _cmd.IsChecked = true;    // command has been parsed
 
                 HandleCmd();
             }
@@ -104,13 +107,13 @@ namespace ue01_aktien
 
             try
             {
-                if (!_cmd.IsChecked)
+                if (!_cmd.IsChecked) // command has not been parsed
                 {
                     msg = "Es wurde noch kein valides Kommando erfasst.";
                     throw new FormatException(msg);
                 }
 
-                switch (_cmd.Cmd)
+                switch (_cmd.Cmd) // call the command handler
                 {
                     case "add":
                         HandleAdd();
@@ -120,6 +123,9 @@ namespace ue01_aktien
                         break;
                     case "save":
                         HandleSave();
+                        break;
+                    case "del":
+                        HandleDelete();
                         break;
                     case "load":
                         HandleLoad();
@@ -170,6 +176,15 @@ namespace ue01_aktien
                 shareToInsert.Name = _cmd.Args[0];
                 shareToInsert.Id = _cmd.Args[1];
                 shareToInsert.Abbr = _cmd.Args[2];
+
+                // search for the share we want to insert to prevent duplicates
+                Share searchRes = _abbrHashtable.Search(_cmd.Args[2]) ?? _nameHashtable.Search(_cmd.Args[0]);
+
+                if (searchRes != null) // share already exists
+                {
+                    msg = "Es gibt bereits eine Aktie mit diesem Kürzel oder Namen!";
+                    throw new FormatException(msg);
+                }
                 
                 _nameHashtable.Add(ref shareToInsert, shareToInsert.Name);
                 _abbrHashtable.Add(ref shareToInsert, shareToInsert.Abbr);
@@ -204,6 +219,7 @@ namespace ue01_aktien
                     throw new FormatException(msg);
                 }
 
+                // search for abbreviation first, then name
                 searchRes = _abbrHashtable.Search(_cmd.Args[0]);
                 if (searchRes != null)
                 {
@@ -218,6 +234,7 @@ namespace ue01_aktien
                     }
                 }
 
+                // print newest share if there is data for it
                 if (searchRes?.SharePrices != null)
                 {
                     Console.WriteLine("Open: {0}", searchRes.SharePrices[0].Open);
@@ -231,6 +248,71 @@ namespace ue01_aktien
                     Console.WriteLine("Keine Kursdaten gefunden.");
                 }
                     
+                Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");
+                Console.ReadKey();
+                ShowMenu();
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");
+                Console.ReadKey();
+                ShowMenu();
+            }
+        }
+        
+        private void HandleDelete()
+        {
+            string msg;
+            int searchRes;
+
+            try
+            {
+                if (_cmd.Cmd != "del")
+                {
+                    msg = "Ungültiger Aufruf des Handlers für das DELETE-Kommando.";
+                    throw new FormatException(msg);
+                } else if (_cmd.Args.Length != 1)
+                {
+                    msg = "Ungültige Anzahl an Parametern.";
+                    throw new FormatException(msg);
+                }
+                
+                // get res so the share can be deleted from both hashtables
+                Share res = _abbrHashtable.Search(_cmd.Args[0]) ?? _nameHashtable.Search(_cmd.Args[0]);
+
+                try
+                {
+                    // delete from both hashtables
+                    searchRes = _nameHashtable.Delete(res.Name); // TODO: return value on first call is not used...
+                    searchRes = _abbrHashtable.Delete(res.Abbr);
+
+                    if (searchRes > 0)
+                    {
+                        Console.WriteLine("Aktie {0} ({1}) erfolgreich gefunden und gelöscht.", res.Name, res.Abbr);
+                    }
+
+                    else
+                    {
+                        if (searchRes == -1)
+                        {
+                            Console.WriteLine("Hashtable ist leer.");
+                        }
+                        else
+                        {
+                            Console.WriteLine(
+                                "Aktie {0} konnte nicht gefunden werden. Vergewissern Sie sich, dass die Aktie vorhanden ist und Sie sich nicht verschrieben haben.",
+                                _cmd.Args[0]);
+                        }
+                    }
+                }
+
+                catch
+                {
+                    Console.WriteLine(
+                        "Aktie {0} konnte nicht gefunden werden. Vergewissern Sie sich, dass die Aktie vorhanden ist und Sie sich nicht verschrieben haben.", _cmd.Args[0]);
+                }
+
                 Console.WriteLine("Zurück zum Menü mit irgendeiner Taste...");
                 Console.ReadKey();
                 ShowMenu();
@@ -261,8 +343,9 @@ namespace ue01_aktien
                     throw new FormatException(msg);
                 }
 
+                // open file stream and save serialized hashtable object in it (uses name hashtable)
                 IFormatter formatter = new BinaryFormatter();
-                Stream stream = new FileStream("./saves/" + _cmd.Args[0] + ".bin", FileMode.Create, FileAccess.Write,
+                Stream stream = new FileStream(System.IO.Directory.GetCurrentDirectory() + "/saves/" + _cmd.Args[0] + ".bin", FileMode.Create, FileAccess.Write,
                     FileShare.None);
                 formatter.Serialize(stream, _nameHashtable);
                 stream.Close();
@@ -304,20 +387,23 @@ namespace ue01_aktien
                     throw new FormatException(msg);
                 }
                 
+                // open file stream and read saved hashtable (nameHashTable)
                 IFormatter formatter = new BinaryFormatter();  
-                Stream stream = new FileStream( "./saves/"+_cmd.Args[0]+".bin", FileMode.Open, FileAccess.Read, FileShare.Read);
+                Stream stream = new FileStream(System.IO.Directory.GetCurrentDirectory() + "/saves/"+_cmd.Args[0]+".bin", FileMode.Open, FileAccess.Read, FileShare.Read);
                 readHashtable = (Hashtable<Share>) formatter.Deserialize(stream); 
                 stream.Close();
 
                 _nameHashtable.Items = readHashtable.Items;
+                // clear abbr HT
                 _abbrHashtable.Clear();
-
+                
+                // reindex abbr HT
                 for (int i = 0; i < Tablesize; i++)
                 {
                     if (readHashtable.Items[i] != null)
                     {
                         ref Share shareToInsert = ref readHashtable.Items[i];
-                        _abbrHashtable.Add(ref shareToInsert, shareToInsert.Abbr); // TODO: Copies share then refs them?
+                        _abbrHashtable.Add(ref shareToInsert, shareToInsert.Abbr);
                     }
                         
                 }
@@ -359,12 +445,9 @@ namespace ue01_aktien
                     throw new FormatException(msg);
                 }
 
-                Share searchRes = _abbrHashtable.Search(_cmd.Args[0]);
+                Share searchRes = _abbrHashtable.Search(_cmd.Args[0]) ?? _nameHashtable.Search(_cmd.Args[0]);
 
-                if (searchRes == null)
-                    searchRes = _nameHashtable.Search(_cmd.Args[0]);
-
-                if (searchRes != null)
+                if (searchRes != null) // found a share for the file name
                 {
                     List<SharePrice> data;
                     if (searchRes.SharePrices != null)
@@ -375,37 +458,45 @@ namespace ue01_aktien
                     {
                         data = new List<SharePrice>(30);
                     }
-                    TextFieldParser csvParser = new TextFieldParser("./imports/"+_cmd.Args[0]+".csv");
+                    
+                    // start parsing the file, name must be the same as share name
+                    TextFieldParser csvParser = new TextFieldParser(
+                        System.IO.Directory.GetCurrentDirectory() + "/imports/"+_cmd.Args[0]+".csv");
                     csvParser.SetDelimiters(",");
 
-                    csvParser.ReadLine();
+                    csvParser.ReadLine(); // do not use column names, skip to data
 
                     while (!csvParser.EndOfData)
                     {
                           string[] fields = csvParser.ReadFields();
-                          DateTime date = DateTime.Parse(fields[0]);
+                          DateTime date = DateTime.Parse(fields[0]); // parse date column
 
+                          // save data from current line
                           SharePrice priceToInsert = new SharePrice(date, float.Parse(fields[1]),
                               float.Parse(fields[2]), float.Parse(fields[3]), float.Parse(fields[4]),
-                              int.Parse(fields[5]), float.Parse(fields[6]));
+                              int.Parse(fields[6]), float.Parse(fields[5]));
                           
                           for(int i=0; i < 30; i++)
                           {
-                              if (i >= data.Count)
+                              if (i >= data.Count) // append if there are not 30 values already
                               {
                                   data.Add(priceToInsert);
                                   break;
                               }
 
-                              if (date > data[i].Date)
+                              if (date > data[i].Date) // insert if date is newer then the saved data
                               {
+                                  if(i > 0)
+                                      if (date == data[i - 1].Date) // do not insert if we already have data for that day
+                                          break;
+                                    
                                   data.Insert(i, priceToInsert);
                                   break;
                               }    
                           }
                     }
 
-                    searchRes.SharePrices = data.Take(30).ToArray(); // TODO: use refernce, return ref from search?
+                    searchRes.SharePrices = data.Take(30).ToArray(); // save the first 30 values to our data structure
                 }
                 else
                 {
@@ -418,7 +509,6 @@ namespace ue01_aktien
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
                 if (ex is FormatException)
                 {
                     Console.WriteLine(ex.Message);
@@ -452,10 +542,7 @@ namespace ue01_aktien
                     throw new FormatException(msg);
                 }
 
-                Share searchRes = _abbrHashtable.Search(_cmd.Args[0]);
-
-                if (searchRes == null)
-                    searchRes = _nameHashtable.Search(_cmd.Args[0]);
+                Share searchRes = _abbrHashtable.Search(_cmd.Args[0]) ?? _nameHashtable.Search(_cmd.Args[0]);
 
                 if (searchRes != null)
                 {
@@ -475,18 +562,20 @@ namespace ue01_aktien
                                 minValue = searchRes.SharePrices[i].Close;
                         }
                         
+                        // write some data that our plot uses, to give the user context
                         Console.Clear();
                         Console.WriteLine("Name der Aktie: {0}({1}), Schlusskurse", searchRes.Name, searchRes.Abbr);
                         Console.WriteLine("Anzahl Werte: {0}", searchRes.SharePrices.Length);
-                        Console.Write("Datum erster Wert: {0}", searchRes.SharePrices[0].Date.ToString("d MMM yyyy"));
+                        Console.Write("Datum erster Wert: {0}", searchRes.SharePrices[searchRes.SharePrices.Length - 1].Date.ToString("d MMM yyyy"));
                         Console.SetCursorPosition(40, Console.CursorTop);
-                        Console.Write("Datum letzter Wert: {0}\n", searchRes.SharePrices[searchRes.SharePrices.Length-1].Date.ToString("d MMM yyyy"));
+                        Console.Write("Datum letzter Wert: {0}\n", searchRes.SharePrices[0].Date.ToString("d MMM yyyy"));
                         Console.Write("Max. Wert: {0}", maxValue);
                         Console.SetCursorPosition(40, Console.CursorTop);
                         Console.Write("Min. Wert: {0}\n", minValue);
                         
                         WriteSpacer();
 
+                        // print axes
                         x = startX;
                         y = startY;
                         Console.SetCursorPosition(x, y);
@@ -503,12 +592,14 @@ namespace ue01_aktien
                             x++;
                         }
 
+                        // fill graph with data, starting with the newest data on the right side
                         x = startX + 61;
                         y = startY + 10;
                         for (int i = 0; i < searchRes.SharePrices.Length; i++)
                         {
                             x = startX + 61 - i * 2;
                             y = startY + 10;
+                            // print bar according to value, normalized to the min and max values
                             int value = (int)(((searchRes.SharePrices[i].Close - minValue) / (maxValue - minValue)) * 10);
                             int endY = y - value;
 
@@ -519,6 +610,7 @@ namespace ue01_aktien
                             }
                         }
                         
+                        // print axis labels
                         Console.SetCursorPosition(1, 10);
                         Console.Write("Schlussk.");
                         
